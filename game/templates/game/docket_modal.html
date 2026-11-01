@@ -1,0 +1,57 @@
+<!-- 📋 Code Vault Docket Modal (Action Queue for Pending Stamps) -->
+<div id="docket-modal" class="modal-backdrop" onclick="if(event.target === this) closeDocketModal()">
+    <div class="bg-slate-900 border border-purple-500 rounded-2xl w-full max-w-lg shadow-2xl p-6 relative flex flex-col gap-4 max-h-[85vh]">
+        <div class="flex items-center justify-between border-b border-purple-900/40 pb-3">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl">📋</span>
+                <div>
+                    <h3 class="text-lg font-bold text-purple-200 flex items-center gap-2">
+                        <span>Code Vault Docket (<span id="modal-docket-count">{{ unredeemed_count }}</span>)</span>
+                        <span class="text-[10px] font-mono bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 px-2 py-0.5 rounded-full uppercase">Action Queue</span>
+                    </h3>
+                    <p class="text-xs text-slate-400">Queued stamps staged for verification & automated ADB entry</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scrollable Queued Pieces List -->
+        <div id="pieces-list" class="flex flex-col gap-3 max-h-[52vh] overflow-y-auto pr-1">
+            {% for piece in collected_pieces %}
+            <div class="bg-slate-850 border border-slate-800 rounded-lg p-3 flex flex-col gap-1.5 border-l-4 {% if piece.property_ref and piece.property_ref.is_rare %}border-l-red-500{% elif piece.is_unsure %}border-l-yellow-500{% else %}border-l-purple-500{% endif %}" id="card-{{ piece.id }}">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-white">{{ piece.label_text }}</span>
+                    {% if piece.property_ref and piece.property_ref.is_rare %}
+                    <span class="text-[9px] font-bold bg-red-950 text-red-400 border border-red-800 px-1.5 py-0.5 rounded">🔥 RARE PIECE</span>
+                    {% elif piece.is_unsure %}
+                    <span class="text-[9px] font-bold bg-yellow-950 text-yellow-400 border border-yellow-800 px-1.5 py-0.5 rounded">❓ Unsure</span>
+                    {% else %}
+                    <span class="text-[9px] font-bold bg-purple-950 text-purple-300 border border-purple-800 px-1.5 py-0.5 rounded">⏳ QUEUED</span>
+                    {% endif %}
+                </div>
+                <div class="font-mono text-xs text-cyan-300 tracking-wider bg-slate-950 px-2.5 py-1.5 rounded border border-slate-800/80">{{ piece.code|default:"[NO CODE DETECTED]" }}</div>
+                <div class="flex justify-between items-center text-[10px] text-slate-400 mt-1">
+                    <span>{{ piece.property_ref.stamp_number|default:piece.piece_type|title }}</span>
+                    <button onclick="closeDocketModal(); openReviewModal({{ piece.id }}, '{{ piece.label_text|escapejs }}', '{{ piece.code|escapejs }}')" class="text-purple-300 hover:text-white underline font-semibold">✏️ Edit Code</button>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-8 flex flex-col items-center gap-2 bg-slate-950/60 rounded-xl border border-purple-900/30">
+                <span class="text-3xl">🎉</span>
+                <p class="text-xs font-semibold text-emerald-400">All scanned codes redeemed!</p>
+                <p class="text-[11px] text-slate-500">Use Grimace Ingestion Studio to scan new stamps into the Action Queue.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="flex items-center justify-between pt-2 border-t border-purple-900/40">
+            <button onclick="closeDocketModal(); openIngestionModal();" class="px-3.5 py-2 bg-purple-900/60 hover:bg-purple-800 border border-purple-500/50 text-purple-200 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-all">
+                <span>📥</span>
+                <span>Scan More Stamps</span>
+            </button>
+            <button onclick="closeDocketModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-lg transition-all">
+                Close
+            </button>
+        </div>
+    </div>
+</div>

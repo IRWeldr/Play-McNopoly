@@ -1,0 +1,13 @@
+# Core Web Dashboard & ORM
+Django>=4.2,<5.2
+python-dotenv>=1.0.0
+
+# Image Processing, Morphological CV & HSV Color-Bar Extraction
+Pillow>=10.0.0
+numpy>=1.24.0
+scipy>=1.11.0
+
+# Vision API & Cross-Platform PDF Game Board Rendering (Zero System Dependencies)
+requests>=2.31.0
+pypdfium2>=4.26.0
+

@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#000000" />
+  <title>📱 Play-McNopoly Pocket • Samsung AMOLED Portal (Port 8085)</title>
+
+  <style>
+    :root {
+      --amoled-black: #000000;
+      --surface: #0a0612;
+      --card: #120a21;
+      --border: #2e1065;
+      --purple-neon: #a855f7;
+      --purple-glow: #c084fc;
+      --amber: #f59e0b;
+      --emerald: #10b981;
+      --rose: #ef4444;
+      --cyan: #06b6d4;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --m-board-zoom: 1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: var(--amoled-black);
+      color: var(--text);
+      font-family: 'SamsungOne', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      padding-bottom: 84px;
+      overflow-x: hidden;
+    }
+
+    /* Top AMOLED Header */
+    .top-header {
+      background: rgba(10, 6, 18, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand-title {
+      font-size: 1.05rem;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .port-pill {
+      font-size: 0.65rem;
+      background: rgba(168, 85, 247, 0.2);
+      border: 1px solid var(--purple-neon);
+      color: var(--purple-glow);
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-family: monospace;
+      font-weight: 700;
+    }
+
+    /* Telemetry Bar (Ultra-Compact Single Row) */
+    .telemetry-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+      padding: 5px 12px;
+      background: var(--surface);
+      border-bottom: 1px solid rgba(168, 85, 247, 0.15);
+      font-size: 0.65rem;
+      font-family: monospace;
+      overflow-x: auto;
+    }
+    .tele-chip {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 2.5px 7px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .dot-live {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 6px var(--emerald);
+    }
+    .dot-purple {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--purple-neon);
+      box-shadow: 0 0 6px var(--purple-neon);
+    }
+
+    :root {
+      --m-board-zoom: 1;
+    }
+
+    /* 3D Grimace AMOLED Canvas */
+    .grimace-card {
+      margin: 12px 16px;
+      background: radial-gradient(circle at center, #240b3b 0%, #000000 75%);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 0 35px rgba(168, 85, 247, 0.18);
+    }
+    #three-mobile-mount {
+      width: 100%;
+      height: 290px;
+      position: relative;
+    }
+    .mascot-switcher {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 5px;
+      padding: 10px 10px 4px 10px;
+      z-index: 10;
+      width: 100%;
+    }
+    .era-switcher {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 12px;
+      z-index: 10;
+    }
+    .era-btn {
+      background: rgba(18, 10, 33, 0.85);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .era-btn.active {
+      background: var(--purple-neon);
+      color: #fff;
+      border-color: #fff;
+      box-shadow: 0 0 12px rgba(168, 85, 247, 0.6);
+    }
+
+    /* Action Controls Section */
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 0 16px;
+      margin-bottom: 12px;
+    }
+    .btn-action {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px;
+      border-radius: 14px;
+      font-weight: 800;
+      font-size: 0.85rem;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-action:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+    .btn-redeem {
+      background: linear-gradient(135deg, #7e22ce, #9333ea);
+      color: #fff;
+      box-shadow: 0 0 20px rgba(147, 51, 234, 0.4);
+    }
+    .btn-redeem:disabled {
+      background: #1e1b2e;
+      color: #64748b;
+      border-color: #334155;
+      box-shadow: none;
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .btn-estop {
+      background: linear-gradient(135deg, #991b1b, #dc2626);
+      color: #fff;
+      border-color: #ef4444;
+      box-shadow: 0 0 20px rgba(220, 38, 38, 0.4);
+      animation: pulse 1.5s infinite;
+    }
+    .btn-estop:disabled {
+      background: #1e1b2e;
+      color: #64748b;
+      border-color: #334155;
+      box-shadow: none;
+      opacity: 0.4;
+      cursor: not-allowed;
+      animation: none;
+    }
+
+    /* ADB Live Status Card */
+    .status-card {
+      margin: 0 16px 14px 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 0.75rem;
+    }
+    .status-header {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.65rem;
+    }
+    .status-ticker {
+      font-family: monospace;
+      color: var(--cyan);
+      font-size: 0.82rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Code Vault Pocket List */
+    .section-title {
+      padding: 6px 16px 8px 16px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+    }
+    .code-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 0 16px;
+    }
+    .code-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      border-left: 4px solid var(--purple-neon);
+    }
+    .code-item.rare {
+      border-left-color: var(--rose);
+    }
+    .code-item.redeemed {
+      border-left-color: var(--emerald);
+      opacity: 0.75;
+    }
+    .code-row-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .code-string {
+      font-family: monospace;
+      font-size: 0.82rem;
+      color: #38bdf8;
+      letter-spacing: 0.06em;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 3px 6px;
+      border-radius: 6px;
+      align-self: flex-start;
+    }
+
+    /* Mobile Property Board Views (Track Board vs List Grid) */
+    #mobile-board-view {
+      display: none;
+      padding: 0 10px 24px 10px;
+    }
+    .m-view-switcher {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(18, 10, 33, 0.85);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 2px;
+    }
+    .m-view-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 4px 9px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .m-view-btn.active {
+      background: var(--purple-neon);
+      color: #fff;
+      box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+    }
+
+    /* Track Board View (Square Monopoly Board) */
+    #m-board-track-container {
+      width: 100%;
+      max-width: 100vw;
+      margin: 0 auto;
+    }
+    .m-monopoly-grid {
+      display: grid;
+      grid-template-columns: 14% repeat(9, 8%) 14%;
+      grid-template-rows: 14% repeat(9, 8%) 14%;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: #020617;
+      border: 1px solid var(--purple-neon);
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 30px rgba(147, 51, 234, 0.25);
+    }
+    .m-track-square {
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #05020a;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5px;
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+      user-select: none;
+      transition: all 0.15s ease;
+    }
+    .m-track-square:active {
+      transform: scale(0.95);
+      z-index: 10;
+    }
+    .m-track-square.collected {
+      background: rgba(168, 85, 247, 0.25);
+      border-color: var(--purple-neon);
+    }
+    .m-track-square.rare {
+      border-color: var(--rose);
+      box-shadow: inset 0 0 6px rgba(244, 63, 94, 0.5);
+    }
+    .m-track-square.winner {
+      border-color: var(--amber);
+      background: rgba(245, 158, 11, 0.3);
+      animation: pulse 1.8s infinite;
+    }
+    .m-track-colorbar {
+      width: 100%;
+      height: 3px;
+      border-radius: 1px;
+    }
+    .m-track-title {
+      font-size: calc(5.5px * var(--m-board-zoom));
+      font-weight: 800;
+      color: #fff;
+      text-align: center;
+      line-height: 1.05;
+      max-height: calc(13px * var(--m-board-zoom));
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .m-track-stamp {
+      font-size: calc(5px * var(--m-board-zoom));
+      font-family: monospace;
+      color: var(--cyan);
+      line-height: 1;
+    }
+    .m-track-center {
+      position: absolute;
+      inset: 14%;
+      background: radial-gradient(circle at center, #1b072e 0%, #020617 80%);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      text-align: center;
+      gap: 6px;
+    }
+
+    /* List Grid View */
+    .m-prop-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .m-prop-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 85px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .m-prop-card:active {
+      transform: scale(0.97);
+    }
+    .m-prop-card.collected {
+      border-color: var(--purple-neon);
+      background: rgba(168, 85, 247, 0.12);
+    }
+    .m-prop-card.rare {
+      border-color: var(--rose);
+      box-shadow: 0 0 10px rgba(244, 63, 94, 0.25);
+    }
+    .m-prop-card.winner {
+      border-color: var(--amber);
+      background: rgba(245, 158, 11, 0.15);
+      animation: pulse 2s infinite;
+    }
+    .m-color-bar {
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      margin-bottom: 5px;
+    }
+    .bar-brown { background: #78350f; }
+    .bar-cyan { background: #06b6d4; }
+    .bar-pink { background: #ec4899; }
+    .bar-orange { background: #f97316; }
+    .bar-red { background: #ef4444; }
+    .bar-yellow { background: #eab308; }
+    .bar-green { background: #22c55e; }
+    .bar-darkblue { background: #1e40af; }
+    .bar-railroad { background: #475569; }
+    .bar-utility { background: #64748b; }
+    .bar-special { background: transparent; }
+
+    .m-card-name {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: 2px;
+    }
+    .m-card-stamp {
+      font-size: 0.68rem;
+      font-family: monospace;
+      color: var(--cyan);
+    }
+    .m-card-status {
+      font-size: 0.65rem;
+      font-weight: 800;
+      margin-top: 4px;
+    }
+
+    /* Fixed Bottom Nav Bar */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(10, 6, 18, 0.96);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      z-index: 50;
+      backdrop-filter: blur(12px);
+    }
+    .nav-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .nav-btn.active {
+      color: var(--purple-glow);
+    }
+    .nav-icon {
+      font-size: 1.25rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header class="top-header" style="padding:8px 14px;">
+    <div class="header-row">
+      <div class="brand-title">
+        <span style="font-size:1.1rem;">🎩</span>
+        <span style="font-size:0.92rem; font-weight:800;">Play-McNopoly</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button onclick="openMobileDocketModal()" style="background:rgba(19, 13, 33, 0.9); border:1px solid var(--border); color:var(--cyan); padding:3px 9px; border-radius:999px; font-size:0.7rem; font-weight:700; cursor:pointer;">
+          📋 Docket (<span id="m-top-docket-count">{{ unredeemed_count }}</span>)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Telemetry Strip (Single Row) -->
+  <div class="telemetry-strip">
+    <div class="tele-chip">
+      <span class="dot-live"></span>
+      <span>:8085</span>
+    </div>
+    <div class="tele-chip">
+      <span class="dot-purple"></span>
+      <span>Qwen3 :1234</span>
+    </div>
+    <div class="tele-chip">
+      <span style="color:var(--cyan)">📱</span>
+      <span id="tele-device-name">{% if adb_devices %}Mobile{% else %}No Phone{% endif %}</span>
+    </div>
+    <div class="tele-chip">
+      <span style="color:var(--amber)">🎟️</span>
+      <span>{{ redeemed_count }} / 100 Cap</span>
+    </div>
+  </div>
+
+  <!-- Mascots View (Contains 3D Canvas + Redeem/ESTOP buttons) -->
+  <div id="mobile-mascots-view">
+    <!-- 3D 5-Mascot AMOLED Arena -->
+    <div class="grimace-card">
+      <div class="mascot-switcher">
+        <button class="era-btn active" id="m-btn-grimace" onclick="selectMobileMascot('grimace')">🟣 Grimace</button>
+        <button class="era-btn" id="m-btn-birdie" onclick="selectMobileMascot('birdie')">🐤 Birdie</button>
+        <button class="era-btn" id="m-btn-hamburglar" onclick="selectMobileMascot('hamburglar')">🍔 Hamburglar</button>
+        <button class="era-btn" id="m-btn-ronald" onclick="selectMobileMascot('ronald')">🤡 Ronald</button>
+        <button class="era-btn" id="m-btn-monopoly" onclick="selectMobileMascot('monopoly')">🎩 Monopoly</button>
+      </div>
+      <div id="three-mobile-mount"></div>
+      <div class="era-switcher">
+        <button class="era-btn" id="m-btn-monocle" style="display:none; color:#fbbf24; border-color:#f59e0b;" onclick="toggleMobileMonocle()">🧐 Monocle: OFF</button>
+        <button class="era-btn" onclick="window.MascotEngine && window.MascotEngine.wave(3.0)">👋 Wave</button>
+        <button class="era-btn" onclick="setModeMobile('1971', this)">😈 1971</button>
+        <button class="era-btn active" onclick="setModeMobile('1980', this)">🟣 1980s</button>
+        <button class="era-btn" onclick="setModeMobile('2026', this)">⚡ 2026</button>
+      </div>
+    </div>
+
+    <!-- Controls Grid (Only on Mascots view) -->
+    <div class="controls-grid">
+      <button class="btn-action btn-redeem" id="btn-mobile-redeem" {% if unredeemed_count == 0 %}disabled title="Code Vault Docket is empty (0 queued codes to redeem)"{% endif %} onclick="triggerMobileRedeem()">
+        <span>🚀</span>
+        <span>Redeem via ADB</span>
+      </button>
+      <button class="btn-action btn-estop" id="btn-mobile-estop" disabled title="E-STOP is disabled (No ADB redemption running)" onclick="triggerMobileEStop()">
+        <span>🛑</span>
+        <span>E-STOP</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Processing & Automation Modal Window (Pops up automatically when running) -->
+  <div id="mobile-automation-modal" onclick="if(event.target===this) closeAutomationModal()" style="position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); display:none; align-items:center; justify-content:center; z-index:220; padding:16px;">
+    <div style="background:var(--card); border:1px solid var(--purple-neon); border-radius:20px; width:100%; max-width:420px; padding:20px; display:flex; flex-direction:column; gap:14px; position:relative; box-shadow:0 0 35px rgba(168,85,247,0.4);">
+      
+      <!-- Modal Header -->
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:10px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:1.4rem;" id="m-auto-icon">🚀</span>
+          <div>
+            <div style="font-size:0.95rem; font-weight:800; color:#fff;">ADB Automation Engine</div>
+            <div style="font-size:0.68rem; color:var(--cyan); font-family:monospace;" id="m-auto-subtitle">Direct Mobile Code Injection</div>
+          </div>
+        </div>
+        <div style="font-size:0.7rem; font-weight:800; padding:3px 8px; border-radius:999px; background:rgba(16,185,129,0.15); border:1px solid var(--emerald); color:var(--emerald);" id="lbl-status-mode">READY</div>
+      </div>
+
+      <!-- Live Ticker & Progress Bar -->
+      <div style="background:rgba(0,0,0,0.6); border:1px solid var(--border); border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--muted); font-family:monospace;">
+          <span>Current Task</span>
+          <span id="lbl-status-count" style="color:var(--cyan); font-weight:700;"></span>
+        </div>
+        <div class="status-ticker" id="lbl-status-ticker" style="font-size:0.85rem; color:#fff; font-weight:700; white-space:normal; line-height:1.3;">
+          Waiting for redemption trigger...
+        </div>
+        <div style="width:100%; height:4px; background:rgba(255,255,255,0.1); border-radius:999px; overflow:hidden; margin-top:4px;">
+          <div id="m-auto-progress" style="width:0%; height:100%; background:linear-gradient(to right, var(--purple-neon), var(--cyan)); transition:width 0.3s ease;"></div>
+        </div>
+      </div>
+
+      <!-- Action Buttons Inside Modal: E-STOP, Snap Stamp, and Close -->
+      <div style="display:flex; flex-direction:column; gap:8px; margin-top:2px;">
+        <button class="btn-action btn-estop" id="btn-modal-estop" style="padding:12px; width:100%;" onclick="triggerMobileEStop()">
+          <span>🛑</span>
+          <span>EMERGENCY STOP (E-STOP)</span>
+        </button>
+
+        <div style="display:flex; justify-content:space-between; gap:8px;">
+          <button onclick="document.getElementById('mobile-file-input').click()" style="flex:1; background:rgba(147,51,234,0.25); border:1px solid var(--purple-neon); color:#e9d5ff; padding:10px; border-radius:12px; font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+            <span>📸</span>
+            <span>Snap More Stamps</span>
+          </button>
+          <button onclick="closeAutomationModal()" style="flex:1; background:var(--surface); border:1px solid var(--border); color:#fff; padding:10px; border-radius:12px; font-size:0.75rem; font-weight:700; cursor:pointer;">
+            Close Window
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Property Board View (Without Characters) -->
+  <div id="mobile-board-view">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; padding:0 2px;">
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span style="font-size:0.92rem; font-weight:800; color:#fff;">🎩 Board</span>
+        <!-- Text Zoom In/Out Controls -->
+        <div style="display:flex; align-items:center; gap:2px; background:rgba(18,10,33,0.85); border:1px solid var(--border); border-radius:999px; padding:1px 4px;">
+          <button onclick="changeMobileZoom(-0.15)" title="Zoom Text Out" style="background:none; border:none; color:var(--muted); font-size:0.75rem; font-weight:800; padding:1px 5px; cursor:pointer;">−</button>
+          <button onclick="resetMobileZoom()" id="lbl-zoom-pct" title="Reset Zoom" style="background:none; border:none; color:var(--cyan); font-size:0.6rem; font-family:monospace; padding:1px 2px; cursor:pointer;">100%</button>
+          <button onclick="changeMobileZoom(0.15)" title="Zoom Text In" style="background:none; border:none; color:var(--muted); font-size:0.75rem; font-weight:800; padding:1px 5px; cursor:pointer;">+</button>
+        </div>
+      </div>
+      
+      <!-- Layout Switcher: Track vs List -->
+      <div class="m-view-switcher">
+        <button class="m-view-btn active" id="btn-layout-track" onclick="setMobileBoardLayout('track')">
+          <span>📐 Track</span>
+        </button>
+        <button class="m-view-btn" id="btn-layout-list" onclick="setMobileBoardLayout('list')">
+          <span>📋 List</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Layout Option 1: 40-Square Perimeter Monopoly Board (Default) -->
+    <div id="m-board-track-container">
+      <div class="m-monopoly-grid" id="m-monopoly-track">
+        <!-- Center Telemetry & Prompt -->
+        <div class="m-track-center">
+          <span style="font-size:1.4rem;">🎩</span>
+          <div style="font-size:0.75rem; font-weight:900; color:#e9d5ff; letter-spacing:0.04em;">PLAY-MCNOPOLY</div>
+          <div style="font-size:0.6rem; color:var(--cyan); font-family:monospace;">Pocket Track Edition</div>
+          <div id="m-track-ticker" style="font-size:0.62rem; color:var(--amber); background:rgba(0,0,0,0.6); padding:4px 8px; border-radius:6px; border:1px solid rgba(245,158,11,0.3); line-height:1.2; margin-top:2px;">
+            Tap any perimeter square to view Dossier & Codes
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Layout Option 2: 2-Column Property List -->
+    <div class="m-prop-grid" id="m-board-grid" style="display:none;"></div>
+  </div>
+
+  <!-- Mobile Property Dossier Modal -->
+  <div id="mobile-prop-modal" onclick="if(event.target===this) closeMobilePropModal()" style="position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); display:none; align-items:center; justify-content:center; z-index:210; padding:16px;">
+    <div style="background:var(--card); border:1px solid var(--purple-neon); border-radius:18px; width:100%; max-width:440px; max-height:85vh; display:flex; flex-direction:column; padding:16px; position:relative; box-shadow:0 0 30px rgba(168,85,247,0.35);">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px; border-bottom:1px solid var(--border); pb:10px; margin-bottom:12px; padding-bottom:10px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div id="m-modal-colorbar" style="width:10px; height:36px; border-radius:4px;"></div>
+          <div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span id="m-modal-title" style="font-size:0.95rem; font-weight:800; color:#fff;"></span>
+              <span id="m-modal-stamp" style="font-size:0.68rem; font-family:monospace; color:var(--cyan); background:rgba(0,0,0,0.5); padding:2px 5px; border-radius:4px;"></span>
+              <span id="m-modal-rare" style="display:none; font-size:0.65rem; font-weight:800; background:rgba(244,63,94,0.2); color:var(--rose); border:1px solid var(--rose); padding:1px 4px; border-radius:4px;">★ RARE</span>
+            </div>
+            <div id="m-modal-prize" style="font-size:0.72rem; color:var(--amber); font-weight:600; margin-top:3px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Set Progress -->
+      <div id="m-modal-set-box" style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:10px; margin-bottom:12px;">
+        <div style="display:flex; justify-content:space-between; font-size:0.7rem; font-weight:700; color:var(--muted); margin-bottom:6px;">
+          <span id="m-modal-set-title">SET PROGRESS</span>
+          <span id="m-modal-set-ratio" style="color:var(--cyan); font-family:monospace;"></span>
+        </div>
+        <div id="m-modal-peers" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+      </div>
+
+      <!-- Redeemed Codes -->
+      <div style="flex:1; overflow-y:auto; margin-bottom:12px;">
+        <div style="font-size:0.72rem; font-weight:800; color:#e9d5ff; margin-bottom:6px;">🎟️ REDEEMED CODES (<span id="m-modal-codes-count">0</span>)</div>
+        <div id="m-modal-codes-list" style="display:flex; flex-direction:column; gap:6px;"></div>
+      </div>
+
+      <button onclick="closeMobilePropModal()" style="background:var(--surface); border:1px solid var(--border); color:#fff; padding:10px; border-radius:10px; font-size:0.78rem; font-weight:700; cursor:pointer;">
+        Close Dossier
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Code Vault Docket Modal -->
+  <div id="mobile-docket-modal" onclick="if(event.target===this) closeMobileDocketModal()" style="position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); display:none; align-items:center; justify-content:center; z-index:200; padding:16px;">
+    <div style="background:var(--card); border:1px solid var(--purple-neon); border-radius:18px; width:100%; max-width:440px; max-height:80vh; display:flex; flex-direction:column; padding:16px; position:relative; box-shadow:0 0 30px rgba(168,85,247,0.35);">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px; padding-bottom:10px; border-bottom:1px solid var(--border);">
+        <span style="font-size:1.5rem;">📋</span>
+        <div>
+          <div style="font-weight:800; font-size:0.95rem; color:#e9d5ff;">Code Vault Docket (<span id="m-modal-docket-count">{{ unredeemed_count }}</span>)</div>
+          <div style="font-size:0.7rem; color:var(--cyan); font-family:monospace;">Action Queue • Staged for ADB Entry</div>
+        </div>
+      </div>
+      <div class="code-list" style="padding:0; overflow-y:auto; max-height:52vh;">
+        {% for piece in collected_pieces %}
+        <div class="code-item {% if piece.property_ref and piece.property_ref.is_rare %}rare{% endif %}">
+          <div class="code-row-top">
+            <span style="color:#fff;">{{ piece.label_text }}</span>
+            {% if piece.property_ref and piece.property_ref.is_rare %}
+              <span style="color:var(--rose); font-size:0.68rem; font-weight:800;">🔥 RARE</span>
+            {% elif piece.is_unsure %}
+              <span style="color:var(--amber); font-size:0.68rem; font-weight:800;">❓ UNSURE</span>
+            {% else %}
+              <span style="color:var(--purple-glow); font-size:0.68rem; font-weight:800;">⏳ QUEUED</span>
+            {% endif %}
+          </div>
+          <div class="code-string">{{ piece.code|default:"[NO CODE]" }}</div>
+        </div>
+        {% empty %}
+        <div style="text-align:center; padding:24px 12px; font-size:0.78rem; color:var(--emerald); font-weight:700;">
+          🎉 All scanned codes redeemed! Snap more stamps to queue.
+        </div>
+        {% endfor %}
+      </div>
+      <div style="display:flex; justify-content:space-between; margin-top:14px; padding-top:10px; border-top:1px solid var(--border);">
+        <button onclick="closeMobileDocketModal(); document.getElementById('mobile-file-input').click();" style="background:rgba(147,51,234,0.25); border:1px solid var(--purple-neon); color:#e9d5ff; padding:8px 12px; border-radius:10px; font-size:0.75rem; font-weight:700; cursor:pointer;">
+          📸 Snap Stamp
+        </button>
+        <button onclick="closeMobileDocketModal()" style="background:var(--surface); border:1px solid var(--border); color:var(--text); padding:8px 16px; border-radius:10px; font-size:0.75rem; font-weight:700; cursor:pointer;">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden File Input for Mobile Stamp Upload -->
+  <input type="file" id="mobile-file-input" accept="image/*" capture="environment" style="display:none;" onchange="handleMobileUpload(event)">
+
+  <!-- Bottom Navigation Bar -->
+  <nav class="bottom-bar">
+    <button class="nav-btn active" id="tab-btn-mascots" onclick="switchMobileTab('mascots')">
+      <span class="nav-icon">🎭</span>
+      <span>Mascots</span>
+    </button>
+    <button class="nav-btn" onclick="document.getElementById('mobile-file-input').click()">
+      <span class="nav-icon">📸</span>
+      <span>Snap Stamp</span>
+    </button>
+    <button class="nav-btn" onclick="openMobileDocketModal()">
+      <span class="nav-icon">📋</span>
+      <span>Docket (<span id="m-nav-docket-count">{{ unredeemed_count }}</span>)</span>
+    </button>
+    <button class="nav-btn" id="btn-mobile-nav-redeem" {% if unredeemed_count == 0 %}disabled title="Code Vault Docket is empty (0 queued codes)" style="opacity:0.4; cursor:not-allowed;"{% endif %} onclick="triggerMobileRedeem()">
+      <span class="nav-icon">🚀</span>
+      <span>Redeem</span>
+    </button>
+    <button class="nav-btn" id="tab-btn-board" onclick="switchMobileTab('board')">
+      <span class="nav-icon">🎩</span>
+      <span>Board</span>
+    </button>
+  </nav>
+
+  <!-- Air-Gapped Three.js and 5-Mascot Engine -->
+  <script src="/static/game/js/three.min.js"></script>
+  <script src="/static/game/js/grimace/grimace-mesh.js"></script>
+  <script src="/static/game/js/mascot/birdie-mesh.js"></script>
+  <script src="/static/game/js/mascot/hamburglar-mesh.js"></script>
+  <script src="/static/game/js/mascot/ronald-mesh.js"></script>
+  <script src="/static/game/js/mascot/monopoly-mesh.js"></script>
+  <script src="/static/game/js/grimace/grimace-particles.js"></script>
+  <script src="/static/game/js/mascot/mascot-core.js"></script>
+
+  <script>
+    const mobileBoardData = {{ properties_json|safe }};
+
+    let currentMobileZoom = 1.0;
+    function changeMobileZoom(delta) {
+      currentMobileZoom = Math.min(1.8, Math.max(0.6, Math.round((currentMobileZoom + delta) * 100) / 100));
+      document.documentElement.style.setProperty('--m-board-zoom', currentMobileZoom);
+      const lbl = document.getElementById('lbl-zoom-pct');
+      if (lbl) lbl.innerText = Math.round(currentMobileZoom * 100) + '%';
+    }
+
+    function resetMobileZoom() {
+      currentMobileZoom = 1.0;
+      document.documentElement.style.setProperty('--m-board-zoom', '1');
+      const lbl = document.getElementById('lbl-zoom-pct');
+      if (lbl) lbl.innerText = '100%';
+    }
+
+    function switchMobileTab(tab) {
+      const mascotsView = document.getElementById('mobile-mascots-view');
+      const boardView = document.getElementById('mobile-board-view');
+      const btnMascots = document.getElementById('tab-btn-mascots');
+      const btnBoard = document.getElementById('tab-btn-board');
+
+      if (tab === 'board') {
+        if (mascotsView) mascotsView.style.display = 'none';
+        if (boardView) boardView.style.display = 'block';
+        if (btnBoard) btnBoard.classList.add('active');
+        if (btnMascots) btnMascots.classList.remove('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        if (mascotsView) mascotsView.style.display = 'block';
+        if (boardView) boardView.style.display = 'none';
+        if (btnMascots) btnMascots.classList.add('active');
+        if (btnBoard) btnBoard.classList.remove('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    function setMobileBoardLayout(mode) {
+      const trackContainer = document.getElementById('m-board-track-container');
+      const listContainer = document.getElementById('m-board-grid');
+      const btnTrack = document.getElementById('btn-layout-track');
+      const btnList = document.getElementById('btn-layout-list');
+
+      if (mode === 'list') {
+        if (trackContainer) trackContainer.style.display = 'none';
+        if (listContainer) listContainer.style.display = 'grid';
+        if (btnList) btnList.classList.add('active');
+        if (btnTrack) btnTrack.classList.remove('active');
+      } else {
+        if (trackContainer) trackContainer.style.display = 'block';
+        if (listContainer) listContainer.style.display = 'none';
+        if (btnTrack) btnTrack.classList.add('active');
+        if (btnList) btnList.classList.remove('active');
+      }
+    }
+
+    function getMobileGridCoords(index) {
+      if (index >= 0 && index <= 10) return { col: 11 - index, row: 11 }; // Bottom row (Go -> Jail)
+      if (index > 10 && index <= 20) return { col: 1, row: 11 - (index - 10) }; // Left row
+      if (index > 20 && index <= 30) return { col: 1 + (index - 20), row: 1 }; // Top row
+      if (index > 30 && index < 40) return { col: 11, row: 1 + (index - 30) }; // Right row
+      return { col: 1, row: 1 };
+    }
+
+    function renderMobileTrackBoard() {
+      const trackGrid = document.getElementById('m-monopoly-track');
+      if (!trackGrid) return;
+
+      // Remove previously rendered square elements (leave center box)
+      const oldSquares = trackGrid.querySelectorAll('.m-track-square');
+      oldSquares.forEach(s => s.remove());
+
+      mobileBoardData.forEach(sq => {
+        const pos = getMobileGridCoords(sq.square_id);
+        const sqEl = document.createElement('div');
+        let sqClass = 'm-track-square';
+        if (sq.is_winner_set) sqClass += ' winner';
+        else if (sq.is_rare) sqClass += ' rare';
+        else if (sq.is_collected) sqClass += ' collected';
+        sqEl.className = sqClass;
+        sqEl.style.gridColumn = pos.col;
+        sqEl.style.gridRow = pos.row;
+
+        const isCorner = [0, 10, 20, 30].includes(sq.square_id);
+
+        sqEl.innerHTML = `
+          ${!isCorner ? `<div class="m-track-colorbar bar-${sq.color_group}"></div>` : ''}
+          <div class="m-track-title">${sq.name}</div>
+          <div class="m-track-stamp">${sq.stamp_number || ''}</div>
+        `;
+
+        sqEl.addEventListener('click', () => {
+          const ticker = document.getElementById('m-track-ticker');
+          if (ticker) {
+            let status = sq.is_winner_set ? '🏆 COMPLETE SET' : (sq.total_redeemed > 0 ? `✅ ${sq.total_redeemed} Redeemed` : (sq.total_queued > 0 ? `⏳ Queued` : '🔒 Uncollected'));
+            ticker.innerText = `${sq.name} (${sq.stamp_number || 'Corner'}) • ${status}`;
+          }
+          openMobilePropModal(sq);
+        });
+
+        trackGrid.appendChild(sqEl);
+      });
+    }
+
+    function renderMobileBoard() {
+      renderMobileTrackBoard();
+      const container = document.getElementById('m-board-grid');
+      if (!container) return;
+      container.innerHTML = '';
+
+      mobileBoardData.forEach(sq => {
+        const isCorner = [0, 10, 20, 30].includes(sq.square_id);
+        const card = document.createElement('div');
+        let cardClass = 'm-prop-card';
+        if (sq.is_winner_set) cardClass += ' winner';
+        else if (sq.is_rare) cardClass += ' rare';
+        else if (sq.is_collected) cardClass += ' collected';
+        card.className = cardClass;
+
+        let statusText = '';
+        let statusColor = 'var(--muted)';
+        if (sq.is_winner_set) {
+          statusText = `🏆 100% SET (${sq.total_redeemed})`;
+          statusColor = 'var(--amber)';
+        } else if (sq.total_redeemed > 0) {
+          statusText = `✅ ${sq.total_redeemed} Redeemed`;
+          statusColor = 'var(--emerald)';
+        } else if (sq.total_queued > 0) {
+          statusText = `⏳ ${sq.total_queued} Queued`;
+          statusColor = 'var(--purple-glow)';
+        } else {
+          statusText = '🔒 Uncollected';
+        }
+
+        card.innerHTML = `
+          <div>
+            ${!isCorner ? `<div class="m-color-bar bar-${sq.color_group}"></div>` : ''}
+            <div class="m-card-name">${sq.name}</div>
+            <div class="m-card-stamp">${sq.stamp_number || (isCorner ? 'Corner Space' : '')}</div>
+          </div>
+          <div class="m-card-status" style="color:${statusColor}">${statusText}</div>
+        `;
+
+        card.addEventListener('click', () => openMobilePropModal(sq));
+        container.appendChild(card);
+      });
+    }
+
+    function openMobilePropModal(sq) {
+      const modal = document.getElementById('mobile-prop-modal');
+      if (!modal) return;
+
+      document.getElementById('m-modal-title').innerText = sq.name;
+      document.getElementById('m-modal-stamp').innerText = sq.stamp_number || 'Corner Space';
+      
+      const rareEl = document.getElementById('m-modal-rare');
+      if (rareEl) rareEl.style.display = sq.is_rare ? 'inline-block' : 'none';
+
+      const colorbar = document.getElementById('m-modal-colorbar');
+      if (colorbar) colorbar.className = `m-color-bar bar-${sq.color_group}`;
+
+      const prizeEl = document.getElementById('m-modal-prize');
+      if (prizeEl) prizeEl.innerText = sq.prize_description ? `🏆 Set Prize: ${sq.prize_description}` : 'Special Board Space';
+
+      // Set Progress Peers
+      const setBox = document.getElementById('m-modal-set-box');
+      const setTitle = document.getElementById('m-modal-set-title');
+      const setRatio = document.getElementById('m-modal-set-ratio');
+      const peersList = document.getElementById('m-modal-peers');
+
+      if (sq.peers && sq.peers.length > 0) {
+        if (setBox) setBox.style.display = 'block';
+        if (setTitle) setTitle.innerText = `${sq.color_group.toUpperCase()} COLOR SET`;
+        if (setRatio) setRatio.innerText = `${sq.set_collected_count} / ${sq.set_total_count} Collected`;
+        if (peersList) {
+          peersList.innerHTML = sq.peers.map(p => `
+            <div style="display:flex; align-items:center; gap:4px; padding:4px 8px; border-radius:6px; font-size:0.7rem; font-weight:700; ${p.is_collected ? 'background:rgba(147,51,234,0.3); border:1px solid var(--purple-neon); color:#fff;' : 'background:var(--card); border:1px solid var(--border); color:var(--muted);'}">
+              <span>${p.is_collected ? '✅' : '🔒'}</span>
+              <span>${p.name}</span>
+            </div>
+          `).join('');
+        }
+      } else if (setBox) {
+        setBox.style.display = 'none';
+      }
+
+      // Redeemed codes
+      const codesCount = document.getElementById('m-modal-codes-count');
+      const codesList = document.getElementById('m-modal-codes-list');
+      const codes = sq.redeemed_codes || [];
+      if (codesCount) codesCount.innerText = codes.length;
+      if (codesList) {
+        if (codes.length === 0) {
+          codesList.innerHTML = '<div style="font-size:0.72rem; color:var(--muted); font-style:italic;">No codes entered for this space yet.</div>';
+        } else {
+          codesList.innerHTML = codes.map(c => `
+            <div style="font-family:monospace; font-size:0.8rem; color:#38bdf8; background:rgba(0,0,0,0.6); padding:5px 8px; border-radius:6px; letter-spacing:0.06em;">${c}</div>
+          `).join('');
+        }
+      }
+
+      modal.style.display = 'flex';
+    }
+
+    function closeMobilePropModal() {
+      const modal = document.getElementById('mobile-prop-modal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderMobileBoard();
+      if (window.MascotEngine) {
+        window.MascotEngine.init('three-mobile-mount');
+      } else if (window.GrimaceEngine) {
+        window.GrimaceEngine.init('three-mobile-mount');
+      }
+      const h = window.location.hash.replace('#', '');
+      if (h === 'board') {
+        switchMobileTab('board');
+      } else if (['birdie', 'hamburglar', 'ronald', 'monopoly'].includes(h)) {
+        setTimeout(() => selectMobileMascot(h), 80);
+      } else if (h === 'monopoly-monocle') {
+        setTimeout(() => {
+          selectMobileMascot('monopoly');
+          toggleMobileMonocle();
+        }, 80);
+      }
+      pollAdbStatus();
+      setInterval(pollAdbStatus, 3000);
+    });
+
+    function selectMobileMascot(type) {
+      if (window.MascotEngine) {
+        window.MascotEngine.switchMascot(type);
+      }
+      ['grimace', 'birdie', 'hamburglar', 'ronald', 'monopoly'].forEach(m => {
+        const b = document.getElementById('m-btn-' + m);
+        if (b) b.classList.toggle('active', m === type);
+      });
+      const btnMonocle = document.getElementById('m-btn-monocle');
+      if (btnMonocle) {
+        btnMonocle.style.display = (type === 'monopoly') ? 'inline-block' : 'none';
+        btnMonocle.textContent = '🧐 Monocle: OFF';
+      }
+    }
+
+    function toggleMobileMonocle() {
+      if (window.MascotEngine && window.MascotEngine.toggleMonocle) {
+        const isOn = window.MascotEngine.toggleMonocle();
+        const btnMonocle = document.getElementById('m-btn-monocle');
+        if (btnMonocle) {
+          btnMonocle.textContent = isOn ? '🧐 Monocle: ON' : '🧐 Monocle: OFF';
+        }
+      }
+    }
+
+    function setModeMobile(mode, btn) {
+      document.querySelectorAll('.era-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      if (window.GrimaceEngine) {
+        window.GrimaceEngine.setMode(mode);
+      }
+    }
+
+    function openMobileDocketModal() {
+      const m = document.getElementById('mobile-docket-modal');
+      if (m) m.style.display = 'flex';
+    }
+
+    function closeMobileDocketModal() {
+      const m = document.getElementById('mobile-docket-modal');
+      if (m) m.style.display = 'none';
+    }
+
+    function openAutomationModal() {
+      const m = document.getElementById('mobile-automation-modal');
+      if (m) m.style.display = 'flex';
+    }
+
+    function closeAutomationModal() {
+      const m = document.getElementById('mobile-automation-modal');
+      if (m) m.style.display = 'none';
+    }
+
+    function setMobileEStopState(active) {
+      const btnEstop = document.getElementById('btn-mobile-estop');
+      const btnModalEstop = document.getElementById('btn-modal-estop');
+      [btnEstop, btnModalEstop].forEach(btn => {
+        if (!btn) return;
+        if (active) {
+          btn.disabled = false;
+          btn.title = "Emergency Stop ADB Execution (Click to Abort)";
+        } else {
+          btn.disabled = true;
+          btn.title = "E-STOP is disabled (No ADB redemption running)";
+        }
+      });
+    }
+
+    function triggerMobileRedeem() {
+      const btnRedeem = document.querySelector('.btn-redeem');
+      if (btnRedeem && btnRedeem.disabled) return;
+
+      if (window.GrimaceEngine) {
+        window.GrimaceEngine.setOverdrive(true);
+      }
+      
+      openAutomationModal();
+      document.getElementById('lbl-status-mode').innerText = "RUNNING";
+      document.getElementById('lbl-status-mode').style.color = "var(--purple-glow)";
+      document.getElementById('lbl-status-ticker').innerText = "Initiating ADB code injection...";
+
+      setMobileEStopState(true);
+
+      if (btnRedeem) {
+        btnRedeem.disabled = true;
+        btnRedeem.style.opacity = '0.5';
+        btnRedeem.style.cursor = 'not-allowed';
+      }
+
+      fetch('/api/adb/redeem/', { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+          document.getElementById('lbl-status-ticker').innerText = data.message;
+        })
+        .catch(err => {
+          document.getElementById('lbl-status-ticker').innerText = "Error: " + err;
+          setMobileEStopState(false);
+        });
+    }
+
+    function triggerMobileEStop() {
+      const btnEstop = document.getElementById('btn-mobile-estop');
+      if (btnEstop && btnEstop.disabled) return;
+
+      if (window.GrimaceEngine) {
+        window.GrimaceEngine.setOverdrive(false);
+      }
+      setMobileEStopState(false);
+
+      fetch('/api/adb/estop/', { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+          document.getElementById('lbl-status-mode').innerText = "STOPPED";
+          document.getElementById('lbl-status-mode').style.color = "var(--rose)";
+          document.getElementById('lbl-status-ticker').innerText = "🛑 EMERGENCY STOP EXECUTED";
+          const prog = document.getElementById('m-auto-progress');
+          if (prog) prog.style.width = '0%';
+        });
+    }
+
+    function pollAdbStatus() {
+      fetch('/api/adb/status/')
+        .then(r => r.json())
+        .then(data => {
+          const teleDevice = document.getElementById('tele-device-name');
+          const qCount = data.queued_count || 0;
+          ['m-top-docket-count', 'm-nav-docket-count', 'm-modal-docket-count'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerText = qCount;
+          });
+
+          // Arm / disarm E-STOP based on background run state
+          setMobileEStopState(data.is_running);
+
+          const btnRedeem = document.getElementById('btn-mobile-redeem');
+          const btnNavRedeem = document.getElementById('btn-mobile-nav-redeem');
+          const setButtonsState = (disabled, opacity, cursor, title) => {
+            [btnRedeem, btnNavRedeem].forEach(b => {
+              if (b) {
+                b.disabled = disabled;
+                b.style.opacity = opacity;
+                b.style.cursor = cursor;
+                b.title = title;
+              }
+            });
+          };
+
+          if (!data.devices || data.devices.length === 0) {
+            if (teleDevice) teleDevice.innerText = data.usb_mtp_only ? "USB Debug Off" : "No Phone";
+            setButtonsState(
+              true,
+              "0.4",
+              "not-allowed",
+              data.usb_mtp_only
+                ? "Turn off Samsung Auto Blocker and enable USB Debugging"
+                : "Connect an Android phone via USB"
+            );
+          } else if (!data.app_installed) {
+            if (teleDevice) teleDevice.innerText = "Mobile (No App)";
+            setButtonsState(true, "0.4", "not-allowed", "McDonald's app is not installed");
+          } else {
+            if (teleDevice) teleDevice.innerText = "Mobile";
+            if (data.is_running) {
+              setButtonsState(true, "0.5", "not-allowed", "Automation in progress...");
+            } else if (!data.queued_count || data.queued_count === 0) {
+              setButtonsState(true, "0.4", "not-allowed", "Code Vault Docket is empty (0 queued codes)");
+            } else {
+              setButtonsState(false, "1", "pointer", `Redeem ${data.queued_count} queued code(s)`);
+            }
+          }
+
+          if (data.is_running) {
+            window._wasMobileAdbRunning = true;
+            openAutomationModal();
+            const modeEl = document.getElementById('lbl-status-mode');
+            if (modeEl) {
+              modeEl.innerText = "RUNNING";
+              modeEl.style.color = "var(--purple-glow)";
+              modeEl.style.borderColor = "var(--purple-neon)";
+              modeEl.style.background = "rgba(147, 51, 234, 0.2)";
+            }
+            const tickerEl = document.getElementById('lbl-status-ticker');
+            if (tickerEl) tickerEl.innerText = `${data.message}`;
+
+            const countEl = document.getElementById('lbl-status-count');
+            if (countEl) countEl.innerText = `${data.completed_count} / ${data.total_count}`;
+
+            const prog = document.getElementById('m-auto-progress');
+            if (prog && data.total_count > 0) {
+              const pct = Math.round((data.completed_count / data.total_count) * 100);
+              prog.style.width = `${pct}%`;
+            }
+            if (window.GrimaceEngine) window.GrimaceEngine.setOverdrive(true);
+          } else if (window._wasMobileAdbRunning) {
+            window._wasMobileAdbRunning = false;
+            const modeEl = document.getElementById('lbl-status-mode');
+            if (modeEl) {
+              modeEl.innerText = "COMPLETE";
+              modeEl.style.color = "var(--emerald)";
+              modeEl.style.borderColor = "var(--emerald)";
+              modeEl.style.background = "rgba(16, 185, 129, 0.2)";
+            }
+            const prog = document.getElementById('m-auto-progress');
+            if (prog) prog.style.width = '100%';
+            setTimeout(() => location.reload(), 1200);
+          } else {
+            if (data.message && data.message.includes("STOP")) {
+              const modeEl = document.getElementById('lbl-status-mode');
+              if (modeEl) {
+                modeEl.innerText = "STOPPED";
+                modeEl.style.color = "var(--rose)";
+                modeEl.style.borderColor = "var(--rose)";
+                modeEl.style.background = "rgba(244, 63, 94, 0.2)";
+              }
+            } else if (!data.app_installed && data.devices && data.devices.length > 0) {
+              const modeEl = document.getElementById('lbl-status-mode');
+              if (modeEl) {
+                modeEl.innerText = "NO APP";
+                modeEl.style.color = "var(--amber)";
+                modeEl.style.borderColor = "var(--amber)";
+                modeEl.style.background = "rgba(245, 158, 11, 0.2)";
+              }
+              const tickerEl = document.getElementById('lbl-status-ticker');
+              if (tickerEl) tickerEl.innerText = "McDonald's app is not installed on connected device";
+            } else {
+              const modeEl = document.getElementById('lbl-status-mode');
+              if (modeEl) {
+                modeEl.innerText = "READY";
+                modeEl.style.color = "var(--emerald)";
+                modeEl.style.borderColor = "var(--emerald)";
+                modeEl.style.background = "rgba(16, 185, 129, 0.15)";
+              }
+            }
+            if (data.message && data.app_installed) {
+              const tickerEl = document.getElementById('lbl-status-ticker');
+              if (tickerEl) tickerEl.innerText = data.message;
+            }
+          }
+        })
+        .catch(() => {});
+    }
+
+    function handleMobileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      document.getElementById('lbl-status-ticker').innerText = `Chewing through ${file.name} with Qwen3-VL...`;
+      const fd = new FormData();
+      fd.append('file', file);
+
+      fetch('/api/upload/', { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(data => {
+          if (data.status === 'success') {
+            const skippedMsg = data.skipped_count ? ` (${data.skipped_count} already in record skipped)` : '';
+            alert(`🎉 Extracted ${data.pieces.length} new stamp(s)!${skippedMsg}`);
+            location.reload();
+          } else {
+            alert("⚠️ " + (data.message || "Failed to extract stamp."));
+          }
+        })
+        .catch(err => alert("❌ Upload error: " + err));
+    }
+  </script>
+</body>
+</html>

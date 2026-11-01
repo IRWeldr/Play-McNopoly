@@ -1,0 +1,79 @@
+<!-- 🎩 Modular Telemetry Nav Bar -->
+<header class="w-full bg-slate-950/90 backdrop-blur-md border-b border-purple-900/40 sticky top-0 z-50 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-xl shadow-purple-950/20">
+    <!-- Left: Brand & Mascot Persona Switcher -->
+    <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
+            <span class="text-2xl animate-bounce">🎩</span>
+            <div>
+                <h1 class="text-base font-black tracking-wider text-purple-300 uppercase flex items-center gap-2">
+                    Play-McNopoly
+                    <span class="text-[10px] bg-purple-900/60 border border-purple-500/40 text-purple-200 px-1.5 py-0.5 rounded font-mono">PORT 8085</span>
+                </h1>
+                <p class="text-[11px] text-slate-400 font-mono">Canadian 2026 Golden Edition • 3D Mascot Arena</p>
+            </div>
+        </div>
+
+        <!-- Generational Era Mode Switcher -->
+        <div class="hidden sm:flex items-center bg-slate-900 border border-purple-900/60 rounded-lg p-0.5 ml-3">
+            <button onclick="setGrimaceMode('1971')" id="btn-mode-1971" class="px-2.5 py-1 text-xs font-semibold rounded text-slate-400 hover:text-purple-300 transition-all">
+                😈 1971 (4 Arms)
+            </button>
+            <button onclick="setGrimaceMode('1980')" id="btn-mode-1980" class="px-2.5 py-1 text-xs font-semibold rounded bg-purple-700 text-white shadow transition-all">
+                🟣 1980s Classic
+            </button>
+            <button onclick="setGrimaceMode('2026')" id="btn-mode-2026" class="px-2.5 py-1 text-xs font-semibold rounded text-slate-400 hover:text-amber-300 transition-all">
+                ⚡ 2026 Overdrive
+            </button>
+        </div>
+    </div>
+
+    <!-- Center: Interconnect Telemetry Pills -->
+    <div class="flex flex-wrap items-center gap-1.5 font-mono text-[11px] w-full sm:w-auto">
+        <!-- Port 8085 Pill -->
+        <div class="flex items-center gap-1.5 bg-slate-900/90 border border-emerald-500/30 px-2.5 py-1 rounded-full text-emerald-400 whitespace-nowrap">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>:8085</span>
+        </div>
+
+        <!-- Port 1234 LM Studio Mesh Pill -->
+        <div id="pill-lms" class="flex items-center gap-1.5 bg-slate-900/90 border border-purple-500/30 px-2.5 py-1 rounded-full text-purple-300 whitespace-nowrap">
+            <span class="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
+            <span>Qwen3-VL :1234</span>
+        </div>
+
+        <!-- ADB Device Pill -->
+        <div id="pill-adb" class="flex items-center gap-1.5 bg-slate-900/90 border border-slate-700/50 px-2.5 py-1 rounded-full text-slate-400 whitespace-nowrap">
+            <span id="adb-status-dot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+            <span id="adb-device-label">No Device</span>
+        </div>
+
+        <!-- Daily Redemption Meter -->
+        <div class="flex items-center gap-1 bg-slate-900/90 border border-amber-500/30 px-2.5 py-1 rounded-full text-amber-300 whitespace-nowrap">
+            <span>🎟️ {{ redeemed_count }} / 100 Cap</span>
+        </div>
+    </div>
+
+    <!-- Right: Action Triggers & Sovereign E-Stop -->
+    <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+        <button onclick="openIngestionModal()" class="px-3 py-1.5 bg-purple-900/60 hover:bg-purple-800 border border-purple-500/50 rounded-lg text-purple-200 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md whitespace-nowrap">
+            <span>📥</span>
+            <span>Scan</span>
+        </button>
+
+        <button onclick="openDocketModal()" id="btn-nav-docket" title="Open Code Vault Docket (Action Queue)" class="px-3 py-1.5 bg-slate-900/90 hover:bg-slate-800 border {% if unredeemed_count > 0 %}border-cyan-400/70 text-cyan-300{% else %}border-purple-500/40 text-purple-200{% endif %} rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md whitespace-nowrap cursor-pointer">
+            <span>📋</span>
+            <span>Docket (<span id="nav-docket-count">{{ unredeemed_count }}</span>)</span>
+        </button>
+
+        <button onclick="triggerAdbRedemption()" id="btn-adb-redeem" {% if unredeemed_count == 0 %}disabled title="Code Vault Docket is empty (0 queued codes to redeem)" class="flex-1 sm:flex-initial justify-center px-3.5 py-1.5 bg-slate-800/80 border border-slate-700/60 text-slate-400 rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-not-allowed opacity-60 whitespace-nowrap"{% else %}class="flex-1 sm:flex-initial justify-center px-3.5 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-lg shadow-purple-600/30 whitespace-nowrap"{% endif %}>
+            <span>🚀</span>
+            <span>Redeem via ADB</span>
+        </button>
+
+        <!-- Sovereign E-STOP (Disabled & muted by default, armed only when ADB redemption is running) -->
+        <button onclick="triggerEStop()" id="btn-adb-estop" disabled title="E-STOP is disabled (No ADB redemption running)" class="px-2.5 py-1.5 bg-slate-900/60 border border-slate-800 text-slate-600 rounded-lg text-xs font-bold flex items-center gap-1 cursor-not-allowed transition-all opacity-40 whitespace-nowrap">
+            <span>🛑</span>
+            <span class="hidden lg:inline">E-STOP</span>
+        </button>
+    </div>
+</header>

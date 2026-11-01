@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environments
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3.*
+db.sqlite3-journal
+*.backup
+
+# Environment Secrets
+.env
+.env.local
+
+# Personal Verification Logs & Uploads (DO NOT COMMIT REAL USER STAMPS/LOGS)
+media/scans/
+media/entry_logs/
+media/uploads/
+data/*_entered_codes.txt
+data/entered_codes.txt
+data/*.json
+dataset/annotations.json
+dataset/comp*
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
