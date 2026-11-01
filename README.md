@@ -1,7 +1,18 @@
 # 🎩 Play-McNopoly (Port 8085)
 ### 2026 Canadian Golden Edition Boardroom, 5-Mascot 3D WebGL Arena, Multi-Model Vision Benchmark & ADB Automation Hub
 
-**Play-McNopoly** is an open-source visual McDonald's Monopoly board tracker, deterministic Color-Bar CV + Vision LLM ingestion pipeline, and Android ADB redemption hub featuring five procedural 3D mascots.
+**Play-McNopoly** is an open-source visual board tracker, deterministic Color-Bar CV + Vision LLM ingestion pipeline, and assistive Android ADB input bridge featuring five procedural 3D WebGL mascots.
+
+---
+
+> ### ⚖️ Legal Disclaimer & Trademark Notice
+> **1. Non-Affiliation**: *Play-McNopoly* is an independent, non-commercial open-source research and accessibility project developed solely for educational, archival, and assistive technology evaluation purposes. This software is **not** affiliated with, authorized by, sponsored by, or endorsed by McDonald's Corporation, McDonald's Restaurants of Canada Limited, Hasbro, Inc., or any of their affiliates or subsidiaries.
+> 
+> **2. Trademarks**: "McDonald's", "McDonaldland", "Grimace", "Birdie the Early Bird", "The Hamburglar", and "Ronald McDonald" are registered trademarks of McDonald's Corporation. "MONOPOLY" and "Mr. Monopoly" are registered trademarks of Hasbro, Inc. All trademarks, service marks, trade names, and character concepts referenced or depicted procedurally in this project remain the sole property of their respective trademark holders. Their reference herein qualifies as nominative fair use for descriptive, identification, and non-commercial educational benchmarking purposes.
+> 
+> **3. Accessibility & Assistive Input Tool**: The Android ADB bridge component is designed as an assistive accessibility input adapter for individuals with dexterity limitations or motor disabilities who experience difficulty manually typing 14-character alphanumeric strings on touchscreens. 
+> 
+> **4. Contest Terms & Contestant Responsibility**: Users are solely responsible for ensuring their use of this software complies with local laws and the official contest terms and rules of any applicable sweepstakes or promotions. The authors and contributors assume no liability for account suspensions, contest disqualifications, or prize forfeitures resulting from automated entries or violations of third-party Terms of Service. Always consult the official rules of the promotion sponsor prior to participation.
 
 ---
 
